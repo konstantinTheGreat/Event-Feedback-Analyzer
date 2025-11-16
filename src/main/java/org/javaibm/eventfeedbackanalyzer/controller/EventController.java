@@ -4,14 +4,17 @@ import lombok.AllArgsConstructor;
 import org.javaibm.eventfeedbackanalyzer.dto.EventResponseDTO;
 import org.javaibm.eventfeedbackanalyzer.dto.FeedbackResponseDTO;
 import org.javaibm.eventfeedbackanalyzer.service.EventService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @AllArgsConstructor
-@RestController("/events")
+@RestController
+@RequestMapping("/events")
 public class EventController {
     private final EventService eventService;
 
@@ -35,8 +38,12 @@ public class EventController {
 
     @PostMapping("/{eventId}/feedback")
     public ResponseEntity<?> submitFeedback(@PathVariable Long eventId, String feedback) {
-        eventService.submitFeedback(eventId, feedback);
-        return ResponseEntity.ok("Feedback submitted");
+        try {
+            eventService.submitFeedback(eventId, feedback);
+            return ResponseEntity.ok("Feedback submitted");
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found");
+        }
     }
 
     @GetMapping("/{eventId}/summary")
